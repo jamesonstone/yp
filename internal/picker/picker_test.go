@@ -44,6 +44,33 @@ printf '📄	file.txt\n'
 	}
 }
 
+func TestRunReturnsSubdirectoriesWhenStarActionPicked(t *testing.T) {
+	tmp := t.TempDir()
+	mustMkdir(t, filepath.Join(tmp, "alpha"))
+	mustMkdir(t, filepath.Join(tmp, "bravo"))
+	mustMkdir(t, filepath.Join(tmp, ".hidden"))
+	mustWriteFile(t, filepath.Join(tmp, "file.txt"), 0o644)
+
+	fzf := writeExecutable(t, filepath.Join(tmp, "fzf"), `#!/bin/sh
+cat >/dev/null
+printf '✳️	*\n'
+`)
+	t.Setenv("PATH", filepath.Dir(fzf)+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	got, err := Run(tmp)
+	if err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+
+	want := strings.Join([]string{
+		filepath.Join(tmp, "alpha"),
+		filepath.Join(tmp, "bravo"),
+	}, "\n")
+	if got != want {
+		t.Fatalf("Run() = %q, want %q", got, want)
+	}
+}
+
 func TestHelperListMatchesShellFunctionRows(t *testing.T) {
 	tmp := t.TempDir()
 	mustMkdir(t, filepath.Join(tmp, "dir"))
@@ -74,6 +101,7 @@ func TestHelperListMatchesShellFunctionRows(t *testing.T) {
 		"⚙️\texec.sh",
 		"📄\tfile.txt",
 		"🔗\tlink",
+		"✳️\t*",
 	} {
 		if !strings.Contains(output, want+"\n") {
 			t.Fatalf("helper output missing %q:\n%s", want, output)
@@ -82,10 +110,34 @@ func TestHelperListMatchesShellFunctionRows(t *testing.T) {
 }
 
 func TestTargetFromPickedPreservesShellConcatenation(t *testing.T) {
-	got := targetFromPicked(string(os.PathSeparator), "📄\tfile.txt")
+	got, err := targetFromPicked(string(os.PathSeparator), "📄\tfile.txt")
+	if err != nil {
+		t.Fatalf("targetFromPicked() error = %v", err)
+	}
 	want := string(os.PathSeparator) + string(os.PathSeparator) + "file.txt"
 	if got != want {
 		t.Fatalf("targetFromPicked() = %s, want %s", got, want)
+	}
+}
+
+func TestTargetFromPickedStarReturnsSubdirectoryList(t *testing.T) {
+	tmp := t.TempDir()
+	mustMkdir(t, filepath.Join(tmp, "alpha"))
+	mustMkdir(t, filepath.Join(tmp, "bravo"))
+	mustMkdir(t, filepath.Join(tmp, ".hidden"))
+	mustWriteFile(t, filepath.Join(tmp, "file.txt"), 0o644)
+
+	got, err := targetFromPicked(tmp, "✳️\t*")
+	if err != nil {
+		t.Fatalf("targetFromPicked() error = %v", err)
+	}
+
+	want := strings.Join([]string{
+		filepath.Join(tmp, "alpha"),
+		filepath.Join(tmp, "bravo"),
+	}, "\n")
+	if got != want {
+		t.Fatalf("targetFromPicked() = %q, want %q", got, want)
 	}
 }
 

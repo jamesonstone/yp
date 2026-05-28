@@ -45,7 +45,7 @@ func Run(startDir string) (string, error) {
 		"--cycle",
 		"--prompt=📂 "+startDir+"/",
 		"--pointer=👉",
-		"--header=tab/shift-tab: cycle · enter: drill or pick · esc: cancel",
+		"--header=*: copy subdirs · tab/shift-tab: cycle · enter: drill or pick · esc: cancel",
 		"--delimiter=\t",
 		"--with-nth=1,2",
 		"--nth=2",
@@ -66,7 +66,7 @@ func Run(startDir string) (string, error) {
 	if line == "" {
 		return currentDir, nil
 	}
-	return targetFromPicked(currentDir, line), nil
+	return targetFromPicked(currentDir, line)
 }
 
 func writeHelper(statePath string) (string, error) {
@@ -92,6 +92,7 @@ case "$action" in
       else printf "📄\t%%s\n" "$f"
       fi
     done
+    printf "✳️\t*\n"
     ;;
   prompt)
     printf "📂 %%s/" "$(cat "$state")"
@@ -136,8 +137,12 @@ func readState(path string) (string, error) {
 	return string(data), nil
 }
 
-func targetFromPicked(currentDir, line string) string {
-	return currentDir + string(os.PathSeparator) + pickedName(line)
+func targetFromPicked(currentDir, line string) (string, error) {
+	name := pickedName(line)
+	if name == "*" {
+		return subdirectoryList(currentDir)
+	}
+	return currentDir + string(os.PathSeparator) + name, nil
 }
 
 func pickedName(line string) string {
@@ -150,4 +155,28 @@ func pickedName(line string) string {
 
 func shellQuote(value string) string {
 	return "'" + strings.ReplaceAll(value, "'", "'\\''") + "'"
+}
+
+func subdirectoryList(dir string) (string, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return "", err
+	}
+
+	targets := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		name := entry.Name()
+		if strings.HasPrefix(name, ".") {
+			continue
+		}
+
+		fullPath := dir + string(os.PathSeparator) + name
+		if info, err := os.Stat(fullPath); err == nil && info.IsDir() {
+			targets = append(targets, fullPath)
+		}
+	}
+	if len(targets) == 0 {
+		return "", fmt.Errorf("no subdirectories found for %s", dir)
+	}
+	return strings.Join(targets, "\n"), nil
 }

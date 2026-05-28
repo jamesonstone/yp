@@ -23,6 +23,18 @@ func run(
 	pickerAvailable func() bool,
 	pickPath func(string) (string, error),
 ) error {
+	if target, ok, err := directoryListTarget(args); ok || err != nil {
+		if err != nil {
+			return err
+		}
+		if err := writeClipboard(target); err != nil {
+			return err
+		}
+
+		_, err = fmt.Fprintf(out, "📋 %s\n", target)
+		return err
+	}
+
 	start := "."
 	if len(args) > 0 && args[0] != "" {
 		start = args[0]
@@ -47,6 +59,80 @@ func run(
 
 	_, err = fmt.Fprintf(out, "📋 %s\n", target)
 	return err
+}
+
+func directoryListTarget(args []string) (string, bool, error) {
+	if len(args) == 0 {
+		return "", false, nil
+	}
+
+	if len(args) == 1 {
+		if !isStarPath(args[0]) {
+			return "", false, nil
+		}
+
+		targets, err := subdirectoriesForStarPath(args[0])
+		if err != nil {
+			return "", true, err
+		}
+		if len(targets) == 0 {
+			return "", true, fmt.Errorf("no subdirectories found for %s", args[0])
+		}
+		return strings.Join(targets, "\n"), true, nil
+	}
+
+	targets, err := directoryArgs(args)
+	if err != nil {
+		return "", true, err
+	}
+	if len(targets) == 0 {
+		return "", false, nil
+	}
+	return strings.Join(targets, "\n"), true, nil
+}
+
+func isStarPath(path string) bool {
+	return filepath.Base(path) == "*"
+}
+
+func subdirectoriesForStarPath(path string) ([]string, error) {
+	parent, err := resolvePath(filepath.Dir(path))
+	if err != nil {
+		return nil, err
+	}
+
+	entries, err := os.ReadDir(parent)
+	if err != nil {
+		return nil, err
+	}
+
+	targets := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		name := entry.Name()
+		if strings.HasPrefix(name, ".") {
+			continue
+		}
+
+		fullPath := filepath.Join(parent, name)
+		if isDir(fullPath) {
+			targets = append(targets, fullPath)
+		}
+	}
+	return targets, nil
+}
+
+func directoryArgs(args []string) ([]string, error) {
+	targets := make([]string, 0, len(args))
+	for _, arg := range args {
+		resolved, err := resolvePath(arg)
+		if err != nil {
+			return nil, err
+		}
+		if isDir(resolved) {
+			targets = append(targets, resolved)
+		}
+	}
+	return targets, nil
 }
 
 func resolvePath(path string) (string, error) {
