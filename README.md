@@ -39,6 +39,9 @@ yp
 # browse a specific directory
 yp ~/src
 
+# copy the current directory without opening the picker
+yp .
+
 # copy a file path directly
 yp README.md
 
@@ -52,6 +55,7 @@ yp ~/src/*
 ## Behavior
 
 - `yp` uses the current directory.
+- `yp .` copies the current directory immediately.
 - `yp <dir>` opens `fzf` when available; without `fzf`, it copies the directory.
 - `yp <file>` copies the file path directly.
 - `yp <missing-path>` matches the zsh function's path resolution.
