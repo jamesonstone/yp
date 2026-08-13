@@ -12,6 +12,10 @@ a file, missing path, or directory and it copies that path directly. Give a
 directory a trailing slash and, when `fzf` is installed, it opens the same
 picker workflow as `/Users/jamesonstone/.config/zsh/functions/yp.zsh`.
 
+<!-- BEGIN KIT-MANAGED README BADGES -->
+[![Last commit](https://img.shields.io/github/last-commit/jamesonstone/yp)](https://github.com/jamesonstone/yp/commits) [![Open issues](https://img.shields.io/github/issues/jamesonstone/yp)](https://github.com/jamesonstone/yp/issues) [![Pull requests](https://img.shields.io/github/issues-pr/jamesonstone/yp)](https://github.com/jamesonstone/yp/pulls) [![Release](https://img.shields.io/github/v/release/jamesonstone/yp)](https://github.com/jamesonstone/yp/releases)
+<!-- END KIT-MANAGED README BADGES -->
+
 No shell integration. No background process. Just `📋 <path>`.
 
 ## Install
@@ -89,3 +93,7 @@ make vet
 
 The project intentionally stays small: standard-library Go plus the same system
 tools used by the original zsh function.
+
+## Maintainers
+
+Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).
