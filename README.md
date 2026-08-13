@@ -8,9 +8,13 @@
 ```
 
 **`yp` is a tiny CLI for copying filesystem paths to your clipboard.** Give it
-a file or missing path and it copies that path directly. Give it a directory
-and, when `fzf` is installed, it opens the same picker workflow as
-`/Users/jamesonstone/.config/zsh/functions/yp.zsh`.
+a file, missing path, or directory and it copies that path directly. Give a
+directory a trailing slash and, when `fzf` is installed, it opens the same
+picker workflow as `/Users/jamesonstone/.config/zsh/functions/yp.zsh`.
+
+<!-- BEGIN KIT-MANAGED README BADGES -->
+[![Last commit](https://img.shields.io/github/last-commit/jamesonstone/yp)](https://github.com/jamesonstone/yp/commits) [![Open issues](https://img.shields.io/github/issues/jamesonstone/yp)](https://github.com/jamesonstone/yp/issues) [![Pull requests](https://img.shields.io/github/issues-pr/jamesonstone/yp)](https://github.com/jamesonstone/yp/pulls) [![Release](https://img.shields.io/github/v/release/jamesonstone/yp)](https://github.com/jamesonstone/yp/releases)
+<!-- END KIT-MANAGED README BADGES -->
 
 No shell integration. No background process. Just `📋 <path>`.
 
@@ -36,8 +40,11 @@ yp README.md
 # browse the current directory with fzf when available
 yp
 
-# browse a specific directory
+# copy a specific directory
 yp ~/src
+
+# browse inside a specific directory
+yp ~/src/
 
 # copy the current directory without opening the picker
 yp .
@@ -56,7 +63,8 @@ yp ~/src/*
 
 - `yp` uses the current directory.
 - `yp .` copies the current directory immediately.
-- `yp <dir>` opens `fzf` when available; without `fzf`, it copies the directory.
+- `yp <dir>` copies the directory path directly.
+- `yp <dir>/` opens `fzf` when available; without `fzf`, it copies the directory.
 - `yp <file>` copies the file path directly.
 - `yp <missing-path>` matches the zsh function's path resolution.
 - `yp <dir>/*` copies every immediate, non-hidden subdirectory path.
@@ -64,9 +72,10 @@ yp ~/src/*
 - If multiple args contain no directories, `yp` falls back to the first arg.
 
 The picker uses `ls -1A`, so dotfiles are shown. `enter` drills into
-directories or accepts files; `tab` and `shift+tab` move through rows; `esc`
-copies the current directory. Type `*` in the picker and press `enter` to copy
-all immediate, non-hidden subdirectory paths from the current picker directory.
+directories or accepts files; `j`/`k`, `tab`/`shift+tab`, and the arrow keys
+move through rows; `esc` copies the current directory. Type `*` in the picker
+and press `enter` to copy all immediate, non-hidden subdirectory paths from the
+current picker directory.
 
 ## Requirements
 
@@ -84,3 +93,7 @@ make vet
 
 The project intentionally stays small: standard-library Go plus the same system
 tools used by the original zsh function.
+
+## Maintainers
+
+Maintained with 🪖 and ❤️ by [Jameson](https://github.com/jamesonstone) (`jamesonstone`).

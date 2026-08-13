@@ -34,3 +34,11 @@ go.work.sum
 # Release artifacts
 dist/
 bin/
+
+# Kit local generated environment, cache, and scratch artifacts
+.envrc
+.kit/cache/
+.kit/tmp/
+.kit/temp/
+.kit/*.tmp
+.kit/*.lock

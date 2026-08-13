@@ -46,7 +46,7 @@ func run(
 	}
 
 	target := resolved
-	if pickerAvailable() && isDir(resolved) && !isExplicitCurrentDir(args) {
+	if isDir(resolved) && shouldUsePicker(args) && pickerAvailable() {
 		target, err = pickPath(resolved)
 		if err != nil {
 			return err
@@ -61,8 +61,11 @@ func run(
 	return err
 }
 
-func isExplicitCurrentDir(args []string) bool {
-	return len(args) == 1 && args[0] != "" && filepath.Clean(args[0]) == "."
+func shouldUsePicker(args []string) bool {
+	if len(args) == 0 || (len(args) == 1 && args[0] == "") {
+		return true
+	}
+	return len(args) == 1 && strings.HasSuffix(args[0], string(os.PathSeparator))
 }
 
 func directoryListTarget(args []string) (string, bool, error) {
