@@ -8,4 +8,5 @@
 
 ## Ticket
 
-Closes #[ticket number]
+<!-- Add one `Closes #...` line for each related issue. -->
+Closes #<ticket-number>

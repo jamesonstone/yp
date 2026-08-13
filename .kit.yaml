@@ -171,6 +171,9 @@ registry:
           source_path: docs/references/rules/work-lane-gating.md
           installed_hash: sha256:0dec6143204a0e5b7616fd1015fef064dbbe3f2fb53d71950ee67595def53450
           state: managed
+github:
+    default_assignees:
+        - jamesonstone
 aws:
     profile: personal
     account_id: "643314767733"
