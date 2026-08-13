@@ -45,11 +45,12 @@ func Run(startDir string) (string, error) {
 		"--cycle",
 		"--prompt=📂 "+startDir+"/",
 		"--pointer=👉",
-		"--header=*: copy subdirs · tab/shift-tab: cycle · enter: drill or pick · esc: cancel",
+		"--header=*: copy subdirs · j/k or tab/shift-tab: move · enter: drill or pick · esc: cancel",
 		"--delimiter=\t",
 		"--with-nth=1,2",
 		"--nth=2",
 		"--bind", "tab:down,btab:up",
+		"--bind", "j:down,k:up",
 		"--bind", "enter:transform("+shellQuote(helperPath)+" enter {})",
 	)
 	cmd.Stdin = bytes.NewReader(initialList)

@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -41,6 +42,30 @@ printf '📄	file.txt\n'
 	want := tmp + string(os.PathSeparator) + "file.txt"
 	if got != want {
 		t.Fatalf("Run() = %s, want %s", got, want)
+	}
+}
+
+func TestRunConfiguresVimNavigationBindings(t *testing.T) {
+	tmp := t.TempDir()
+	argsPath := filepath.Join(tmp, "args")
+	fzf := writeExecutable(t, filepath.Join(tmp, "fzf"), `#!/bin/sh
+printf '%s\n' "$@" > "$YP_FZF_ARGS"
+cat >/dev/null
+exit 130
+`)
+	t.Setenv("PATH", filepath.Dir(fzf)+string(os.PathListSeparator)+os.Getenv("PATH"))
+	t.Setenv("YP_FZF_ARGS", argsPath)
+
+	if _, err := Run(tmp); err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+
+	args := strings.Split(strings.TrimSpace(mustReadFile(t, argsPath)), "\n")
+	if !slices.Contains(args, "j:down,k:up") {
+		t.Fatalf("fzf args = %q, want j/k navigation binding", args)
+	}
+	if !slices.Contains(args, "--header=*: copy subdirs · j/k or tab/shift-tab: move · enter: drill or pick · esc: cancel") {
+		t.Fatalf("fzf args = %q, want j/k help in header", args)
 	}
 }
 
@@ -173,6 +198,15 @@ func mustWriteFile(t *testing.T, path string, mode os.FileMode) {
 	if err := os.WriteFile(path, []byte("x"), mode); err != nil {
 		t.Fatalf("write file %s: %v", path, err)
 	}
+}
+
+func mustReadFile(t *testing.T, path string) string {
+	t.Helper()
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read %s: %v", path, err)
+	}
+	return string(data)
 }
 
 func mustSymlink(t *testing.T, target, path string) {
