@@ -8,7 +8,7 @@
 ```
 
 **`yp` is a tiny CLI for copying filesystem paths to your clipboard.** Give it
-a file, missing path, or directory and it copies that path directly. Give a
+an existing file or directory and it copies that path directly. Give a
 directory a trailing slash and, when `fzf` is installed, it opens the same
 picker workflow as `/Users/jamesonstone/.config/zsh/functions/yp.zsh`.
 
@@ -52,8 +52,8 @@ yp .
 # copy a file path directly
 yp README.md
 
-# copy a not-yet-created path
-yp future/file.txt
+# reject a missing path and suggest a close sibling when one exists
+yp docs/report_v3.md
 
 # copy every immediate subdirectory path as a newline-separated list
 yp ~/src/*
@@ -66,7 +66,8 @@ yp ~/src/*
 - `yp <dir>` copies the directory path directly.
 - `yp <dir>/` opens `fzf` when available; without `fzf`, it copies the directory.
 - `yp <file>` copies the file path directly.
-- `yp <missing-path>` matches the zsh function's path resolution.
+- `yp <missing-path>` returns an error without changing the clipboard and may
+  suggest a close file from the same directory.
 - `yp <dir>/*` copies every immediate, non-hidden subdirectory path.
 - Shell-expanded directory args are copied as a newline-separated list.
 - If multiple args contain no directories, `yp` falls back to the first arg.
