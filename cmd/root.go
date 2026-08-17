@@ -39,6 +39,9 @@ func run(
 	if len(args) > 0 && args[0] != "" {
 		start = args[0]
 	}
+	if err := validatePath(start); err != nil {
+		return err
+	}
 
 	resolved, err := resolvePath(start)
 	if err != nil {
@@ -131,6 +134,9 @@ func subdirectoriesForStarPath(path string) ([]string, error) {
 func directoryArgs(args []string) ([]string, error) {
 	targets := make([]string, 0, len(args))
 	for _, arg := range args {
+		if err := validatePath(arg); err != nil {
+			return nil, err
+		}
 		resolved, err := resolvePath(arg)
 		if err != nil {
 			return nil, err

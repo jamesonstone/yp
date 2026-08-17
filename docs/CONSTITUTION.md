@@ -2,7 +2,10 @@
 
 ## PRINCIPLES
 
-<!-- TODO: define core principles that guide all decisions -->
+- Keep `yp` focused on resolving local filesystem paths and copying them to the system clipboard; interactive browsing remains optional.
+- Preserve explicit invocation intent: ordinary file and directory arguments copy directly, while no arguments or a trailing directory separator requests interactive browsing when `fzf` is available.
+- Reject missing or inaccessible direct-copy inputs before writing to the clipboard.
+- Keep execution local and dependency-light by favoring standard-library Go and delegating interactive selection and clipboard delivery to established local tools.
 
 ## CONSTRAINTS
 
@@ -47,8 +50,13 @@
 
 ## NON-GOALS
 
-<!-- TODO: define what this project explicitly will not do -->
+- Provide shell integration or run as a resident or background process.
+- Create, modify, move, or delete user-selected filesystem entries; missing paths are errors rather than prospective clipboard targets.
+- Call remote services or APIs, or require accounts, credentials, or deployed infrastructure.
 
 ## DEFINITIONS
 
-<!-- TODO: define key terms used throughout the project -->
+- **Direct copy**: The non-interactive flow that validates and resolves an existing file or directory argument before writing its path to the clipboard.
+- **Browse request**: An invocation with no arguments or with one directory argument ending in a path separator; it uses the picker when `fzf` is available and otherwise copies the directory directly.
+- **Picker**: The optional `fzf`-based workflow for interactively browsing a local directory and selecting the clipboard target.
+- **Directory list**: A newline-separated clipboard payload containing immediate, non-hidden subdirectory paths.

@@ -91,6 +91,7 @@ func TestRunMatchesShellFunctionForLeadingDashInput(t *testing.T) {
 			t.Fatalf("restore cwd: %v", err)
 		}
 	})
+	mustWriteFile(t, filepath.Join(tmp, "--help"))
 
 	var copied string
 	err = run(
