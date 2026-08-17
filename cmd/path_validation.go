@@ -41,6 +41,7 @@ func closestSiblingFile(path string) string {
 
 	target := filepath.Base(path)
 	targetExtension := strings.ToLower(filepath.Ext(target))
+	targetRunes := []rune(strings.ToLower(target))
 	maximumDistance := suggestionDistanceLimit(target)
 	bestDistance := maximumDistance + 1
 	bestName := ""
@@ -57,7 +58,16 @@ func closestSiblingFile(path string) string {
 			continue
 		}
 
-		distance := editDistance(strings.ToLower(target), strings.ToLower(name))
+		candidateRunes := []rune(strings.ToLower(name))
+		lengthDifference := len(targetRunes) - len(candidateRunes)
+		if lengthDifference < 0 {
+			lengthDifference = -lengthDifference
+		}
+		if lengthDifference > maximumDistance {
+			continue
+		}
+
+		distance := editDistance(targetRunes, candidateRunes, maximumDistance)
 		if distance < bestDistance {
 			bestDistance = distance
 			bestName = name
@@ -81,29 +91,58 @@ func suggestionDistanceLimit(name string) int {
 	}
 }
 
-func editDistance(left, right string) int {
-	rightRunes := []rune(right)
-	previous := make([]int, len(rightRunes)+1)
+func editDistance(left, right []rune, maximumDistance int) int {
+	outsideLimit := maximumDistance + 1
+	if len(left)-len(right) > maximumDistance || len(right)-len(left) > maximumDistance {
+		return outsideLimit
+	}
+
+	previous := make([]int, len(right)+1)
+	current := make([]int, len(right)+1)
 	for index := range previous {
+		previous[index] = outsideLimit
+		current[index] = outsideLimit
+	}
+	for index := 0; index <= min(len(right), maximumDistance); index++ {
 		previous[index] = index
 	}
 
-	for leftIndex, leftRune := range []rune(left) {
-		current := make([]int, len(rightRunes)+1)
-		current[0] = leftIndex + 1
-		for rightIndex, rightRune := range rightRunes {
+	for leftIndex, leftRune := range left {
+		row := leftIndex + 1
+		start := max(1, row-maximumDistance)
+		end := min(len(right), row+maximumDistance)
+		rowMinimum := outsideLimit
+
+		if start == 1 {
+			current[0] = row
+			rowMinimum = row
+		} else {
+			current[start-1] = outsideLimit
+		}
+
+		for column := start; column <= end; column++ {
 			replacementCost := 0
-			if leftRune != rightRune {
+			if leftRune != right[column-1] {
 				replacementCost = 1
 			}
-			current[rightIndex+1] = min(
-				current[rightIndex]+1,
-				previous[rightIndex+1]+1,
-				previous[rightIndex]+replacementCost,
+			current[column] = min(
+				current[column-1]+1,
+				previous[column]+1,
+				previous[column-1]+replacementCost,
 			)
+			rowMinimum = min(rowMinimum, current[column])
 		}
-		previous = current
+		if end < len(right) {
+			current[end+1] = outsideLimit
+		}
+		if rowMinimum > maximumDistance {
+			return outsideLimit
+		}
+		previous, current = current, previous
 	}
 
-	return previous[len(rightRunes)]
+	if previous[len(right)] > maximumDistance {
+		return outsideLimit
+	}
+	return previous[len(right)]
 }

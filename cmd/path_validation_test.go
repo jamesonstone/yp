@@ -86,3 +86,41 @@ func TestDirectoryArgsRejectsMissingInput(t *testing.T) {
 		t.Fatalf("directoryArgs() error = %v, want not-exist error", err)
 	}
 }
+
+func TestValidatePathDoesNotSuggestFileForMissingDirectory(t *testing.T) {
+	tmp := t.TempDir()
+	mustWriteFile(t, filepath.Join(tmp, "missing"))
+	missingDirectory := filepath.Join(tmp, "mssing") + string(filepath.Separator)
+
+	err := validatePath(missingDirectory)
+	if !errors.Is(err, fs.ErrNotExist) {
+		t.Fatalf("validatePath() error = %v, want not-exist error", err)
+	}
+	if strings.Contains(err.Error(), "did you mean") {
+		t.Fatalf("validatePath() error = %v, want no file suggestion", err)
+	}
+}
+
+func TestEditDistanceHonorsMaximum(t *testing.T) {
+	tests := []struct {
+		name     string
+		left     string
+		right    string
+		maximum  int
+		expected int
+	}{
+		{name: "within limit", left: "contract_v3.md", right: "contract.md", maximum: 3, expected: 3},
+		{name: "outside limit", left: "kitten", right: "sitting", maximum: 2, expected: 3},
+		{name: "unicode", left: "café.md", right: "cafe.md", maximum: 1, expected: 1},
+		{name: "empty", left: "", right: "abc", maximum: 3, expected: 3},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := editDistance([]rune(test.left), []rune(test.right), test.maximum)
+			if got != test.expected {
+				t.Fatalf("editDistance() = %d, want %d", got, test.expected)
+			}
+		})
+	}
+}
