@@ -76,26 +76,14 @@ func TestResolvePathMatchesShellFunction(t *testing.T) {
 	}
 }
 
-func TestRunMatchesShellFunctionForLeadingDashInput(t *testing.T) {
+func TestRunPassesThroughEndOfFlagsPath(t *testing.T) {
 	tmp := t.TempDir()
-	originalDir, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("getwd: %v", err)
-	}
-	if err := os.Chdir(tmp); err != nil {
-		t.Fatalf("chdir %s: %v", tmp, err)
-	}
-	t.Setenv("PWD", tmp)
-	t.Cleanup(func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Fatalf("restore cwd: %v", err)
-		}
-	})
-	mustWriteFile(t, filepath.Join(tmp, "--help"))
+	filePath := filepath.Join(tmp, "file.txt")
+	mustWriteFile(t, filePath)
 
 	var copied string
-	err = run(
-		[]string{"--help"},
+	err := run(
+		[]string{"--", filePath},
 		&bytes.Buffer{},
 		func(value string) error {
 			copied = value
@@ -110,10 +98,8 @@ func TestRunMatchesShellFunctionForLeadingDashInput(t *testing.T) {
 	if err != nil {
 		t.Fatalf("run() error = %v", err)
 	}
-
-	want := tmp + string(os.PathSeparator)
-	if copied != want {
-		t.Fatalf("copied = %s, want %s", copied, want)
+	if copied != filePath {
+		t.Fatalf("copied = %s, want %s", copied, filePath)
 	}
 }
 

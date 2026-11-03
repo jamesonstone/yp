@@ -23,6 +23,19 @@ func run(
 	pickerAvailable func() bool,
 	pickPath func(string) (string, error),
 ) error {
+	parsed, err := parseArgs(args)
+	if err != nil {
+		return err
+	}
+	if parsed.help {
+		_, err = io.WriteString(out, usageText)
+		return err
+	}
+	if parsed.copyContents {
+		return copyFile(parsed.paths, out, writeClipboard, pickerAvailable, pickPath)
+	}
+	args = parsed.paths
+
 	if target, ok, err := directoryListTarget(args); ok || err != nil {
 		if err != nil {
 			return err

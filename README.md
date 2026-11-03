@@ -8,9 +8,10 @@
 ```
 
 **`yp` is a tiny CLI for copying filesystem paths to your clipboard.** Give it
-an existing file or directory and it copies that path directly. Give a
-directory a trailing slash and, when `fzf` is installed, it opens the same
-picker workflow as `/Users/jamesonstone/.config/zsh/functions/yp.zsh`.
+an existing file or directory and it copies that path directly. Pass `-c` or
+`--copy` to copy one file's contents instead. Give a directory a trailing
+slash and, when `fzf` is installed, it opens the same picker workflow as
+`/Users/jamesonstone/.config/zsh/functions/yp.zsh`.
 
 <!-- BEGIN KIT-MANAGED README BADGES -->
 [![Last commit](https://img.shields.io/github/last-commit/jamesonstone/yp)](https://github.com/jamesonstone/yp/commits) [![Open issues](https://img.shields.io/github/issues/jamesonstone/yp)](https://github.com/jamesonstone/yp/issues) [![Pull requests](https://img.shields.io/github/issues-pr/jamesonstone/yp)](https://github.com/jamesonstone/yp/pulls) [![Release](https://img.shields.io/github/v/release/jamesonstone/yp)](https://github.com/jamesonstone/yp/releases)
@@ -52,6 +53,13 @@ yp .
 # copy a file path directly
 yp README.md
 
+# copy a file's contents instead of its path
+yp -c README.md
+yp --copy README.md
+
+# copy the contents of a file picked with fzf
+yp -c ~/src/
+
 # reject a missing path and suggest a close sibling when one exists
 yp docs/report_v3.md
 
@@ -66,6 +74,13 @@ yp ~/src/*
 - `yp <dir>` copies the directory path directly.
 - `yp <dir>/` opens `fzf` when available; without `fzf`, it copies the directory.
 - `yp <file>` copies the file path directly.
+- A name that starts with `-` is a flag. Pass that path as `./name` or after `--`.
+- `yp -c <file>` and `yp --copy <file>` copy that file's contents.
+- `yp -c <dir>/` copies the contents of the file picked in `fzf`.
+- `yp -c` rejects a directory, a missing path, or more than one path without
+  changing the clipboard. A missing path may suggest a close sibling file.
+  The confirmation shows the file and its size, not the contents.
+- `yp -c` rejects non-regular files and files that contain a NUL byte.
 - `yp <missing-path>` returns an error without changing the clipboard and may
   suggest a close file from the same directory.
 - `yp <dir>/*` copies every immediate, non-hidden subdirectory path.
